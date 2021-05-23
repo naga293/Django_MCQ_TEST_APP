@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <script src="https://www.w3schools.com/bootstrap4/bootstrap_collapse.asp"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+ <nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="navbar-header">
+              <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+            <li>
+                <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
+                <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
+            </li>
+            {% else %}
+            <li>
+                <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Username" name="username" >
+                        <input type="password" class="form-control" placeholder="Password" name="psw" >
+                        <button class="btn btn-primary" type="submit">Login</button>
+                        <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
+                    </div>
+                </form>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    {% if percent_obtained > 80 %}
+    <div class="alert alert-success">
+    <h4>CONGRATULATIONS, {{user.username}}! You have passed the exam and completed the course with score {{percent_obtained}}/100</h4>
+    </div>
+        {% else %}
+        <div class="alert alert-danger">
+            <h4>Sorry, {{user.username}}! You have failed exam with score {{percent_obtained}}/100</h4>
+        </div>
+        <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course_id %}">Re-test</a>
+        {% endif %}
+        <div class="card-columns-vertical mt-1">
+        <h5 class="">Exam Responses</h5>
+            {% comment %} <button type="button" class="btn btn-info btn-block" data-toggle="collapse"  data-target="#expand_response">Expand Responses</button> {% endcomment %}
+                <div id="expand_response" class="collapse show">
+                    {% if question_list %}
+                    <form id="questionform" method="post">
+                        {% for question in question_list %}
+                                <div class="card mt-1" name = "questionList">
+                                    <div class="card-header">
+                                        <h5>{{ question.content}}</h5> 
+                                    </div>
+                                    
+                                    {% csrf_token %}
+                                    <div>
+                                    {% for choice in question.choice_set.all %}
+                                            <div>
+                                            {% if choice.is_correct %}
+                                                {% if choice.id in submitted_anwsers %}
+                                                    <p style="color:green;">&emsp;&emsp;Correct Answer: {{choice.content}}</p>
+                                                {% else %}
+                                                    <p style="color:blue;">&emsp;&emsp;Not Selected: {{choice.content}}</p>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if choice.id in submitted_anwsers %}
+                                                    <p style="color:red;">&emsp;&emsp;Incorrect Answer: {{choice.content}}</p>
+                                                {% else %}
+                                                    <p >&emsp;&emsp;{{choice.content}}</p>
+                                                {% endif %}
+                                            {% endif %}
+                                            </div>
+                                    {% endfor %}
+                                    </div>
+                                </div>
+                        {% endfor %}
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
